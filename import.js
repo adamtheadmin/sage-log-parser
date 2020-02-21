@@ -2,6 +2,10 @@
     Parse Sage Cloudwatch Log
 *///===
 
+String.prototype.replaceAll = String.prototype.replaceAll || function(string, replaced) {
+    return this.replace(new RegExp(string, 'g'), replaced);
+};
+
 const csv = require('csv'),
     waterfall = require('async/waterfall'),
     queue = require('async/queue'),
@@ -23,8 +27,8 @@ const csv = require('csv'),
                 response = parts[1],
                 clIndicator = response.indexOf('Content-Length:'),
                 JSONStart = response.indexOf(' ', clIndicator + 16) + 1,
-                JSONEnd = response.lastIndexOf('200'),
-                responseJSON = response.substr(JSONStart, JSONEnd).replace('200 OK NULL [] []', ''),
+                JSONEnd = response.lastIndexOf(' 200'),
+                responseJSON = response.substr(JSONStart, JSONEnd).replaceAll('\r', '').replaceAll('\n', '').replace('200 OK NULL [] []', '').trim(),
                 response2 = json_try_parse(responseJSON),
                 requestStart = parts[0].indexOf('Request: ') + 8,
                 requestEnd = parts[0].indexOf(' ', requestStart + 15),
@@ -33,9 +37,9 @@ const csv = require('csv'),
             for (var x in qsparsed) {
                 let item = qsparsed[x],
                     foundResponse = false
-                if (Array.isArray(item)) {
+                if (response2 && Array.isArray(item)) {
                     for (var y in item) {
-                        if (response2 && (y in response2)) {
+                        if (y in response2) {
                             item[y].response = response2[y]
                             foundResponse = true
                         }
@@ -45,6 +49,7 @@ const csv = require('csv'),
                     response2 = null
                 }
             }
+
 
             let payload = {requestID, query : qsparsed, response : response2}
 
@@ -62,7 +67,8 @@ const csv = require('csv'),
     }, 5)
 
 function json_try_parse (document) {
-    while (document.length) {
+    document = document.toString()
+    while (document.length > 0) {
         try {
             let response = JSON.parse(document)
             return response;
