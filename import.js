@@ -13,6 +13,9 @@ const csv = require('csv'),
     cwd = process.cwd(),
     q = new queue((row, done) => {
         try {
+            if (row.length < 25){
+                return done(null)
+            }
             let parts = row.split('>>>>'),
                 querystring = parts[0].substring(parts[0].indexOf('JSON='), parts[0].length),
                 requestQS = qs.parse(querystring).JSON,
@@ -32,7 +35,7 @@ const csv = require('csv'),
                     foundResponse = false
                 if (Array.isArray(item)) {
                     for (var y in item) {
-                        if (y in response2) {
+                        if (response2 && (y in response2)) {
                             item[y].response = response2[y]
                             foundResponse = true
                         }
