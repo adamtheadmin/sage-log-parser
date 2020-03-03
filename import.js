@@ -32,7 +32,8 @@ const csv = require('csv'),
                 response2 = json_try_parse(responseJSON),
                 requestStart = parts[0].indexOf('Request: ') + 8,
                 requestEnd = parts[0].indexOf(' ', requestStart + 15),
-                requestID = parts[0].substr(requestStart, requestEnd)
+                requestID = parts[0].substr(requestStart, requestEnd),
+                timestamp = parts[0].substr(1, 19)
 
             for (var x in qsparsed) {
                 let item = qsparsed[x],
@@ -51,7 +52,7 @@ const csv = require('csv'),
             }
 
 
-            let payload = {requestID, query : qsparsed, response : response2}
+            let payload = {requestID, query : qsparsed, response : response2, timestamp}
 
             fsPromises.writeFile(path.resolve(cwd, 'results', +(new Date) + Math.random() + '.json'), JSON.stringify(payload, null, 4))
                 .then(() => done())
