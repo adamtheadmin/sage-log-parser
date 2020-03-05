@@ -6,6 +6,8 @@ String.prototype.replaceAll = String.prototype.replaceAll || function(string, re
     return this.replace(new RegExp(string, 'g'), replaced);
 };
 
+var fileNumber = 001;
+
 const csv = require('csv'),
     waterfall = require('async/waterfall'),
     queue = require('async/queue'),
@@ -54,13 +56,14 @@ const csv = require('csv'),
 
             let payload = {requestID, query : qsparsed, response : response2, timestamp}
 
-            fsPromises.writeFile(path.resolve(cwd, 'results', +(new Date) + Math.random() + '.json'), JSON.stringify(payload, null, 4))
+            fsPromises.writeFile(path.resolve(cwd, 'results', nowFormat() + '.' + fileNumber + '.json'), JSON.stringify(payload, null, 4))
                 .then(() => done())
                 .catch(e => {
                     console.log(e)
                     done()
                 })
             console.log(`Wrote File`);
+            fileNumber++;
         } catch(e){
             //throw e;
             return done();
@@ -86,7 +89,7 @@ waterfall([
         spawn('rm', ['-rf', cwd + '/results'])
             .on('exit', code => {
                 if (code) {
-                    console.log("Error deleting resutls")
+                    console.log("Error deleting results")
                 }
                 next(null)
             })
@@ -135,3 +138,17 @@ waterfall([
         console.log("Complete!");
     }, 50)
 })
+
+function nowFormat() {
+
+    var d = new Date;
+    var dformat = [d.getFullYear(),
+            d.getMonth()+1,
+            d.getDate()].join('-')+'_'+
+        [d.getHours(),
+            d.getMinutes(),
+            d.getSeconds()].join('-');
+
+    return dformat;
+
+}
