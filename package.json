@@ -4,7 +4,7 @@
   "description": "",
   "main": "import.js",
   "dependencies": {
-    "async": "^3.1.1",
+    "async": "^3.2.2",
     "csv": "^5.3.1",
     "qs": "^6.9.1"
   },
